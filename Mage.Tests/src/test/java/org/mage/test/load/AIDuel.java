@@ -64,12 +64,22 @@ public class AIDuel {
         Assert.assertFalse("need allowed sets", deckAllowedSets.isEmpty());
 
         // monitor and game source
-        LoadPlayer monitor = new LoadPlayer("m", true);
+        //LoadPlayer monitor = new LoadPlayer("m", true);
+        String userName = TEST_USER_NAME + RandomUtil.nextInt(10000);
+        Connection connection = createSimpleConnection(userName);
+        SimpleMageClient client = new SimpleMageClient(true);
+        Session session = new SessionImpl(client);
+
+        session.connect(connection);
+        client.setSession(session);
+        UUID roomID = session.getMainRoomId();
+
+
 
         // game by monitor
-        GameTypeView gameType = prepareGameType(monitor.session);
-        MatchOptions gameOptions = createSimpleGameOptionsForAI(gameType, monitor.session, gameName);
-        TableView game = monitor.session.createTable(monitor.roomID, gameOptions);
+        GameTypeView gameType = prepareGameType(session);
+        MatchOptions gameOptions = createSimpleGameOptionsForAI(gameType, session, gameName);
+        TableView game = session.createTable(roomID, gameOptions);
         UUID tableId = game.getTableId();
 
         // deck load
@@ -88,19 +98,19 @@ public class AIDuel {
         Optional<TableView> checkGame;
 
         // join AI
-        Assert.assertTrue(monitor.session.joinTable(monitor.roomID, tableId, "ai_1", PlayerType.COMPUTER_MAD, 5, deckList1, ""));
-        Assert.assertTrue(monitor.session.joinTable(monitor.roomID, tableId, "ai_2", PlayerType.COMPUTER_MAD, 5, deckList2, ""));
+        Assert.assertTrue(session.joinTable(roomID, tableId, "ai_1", PlayerType.COMPUTER_MAD, 5, deckList1, ""));
+        Assert.assertTrue(session.joinTable(roomID, tableId, "ai_2", PlayerType.COMPUTER_MAD, 5, deckList2, ""));
 
         // match start
-        Assert.assertTrue(monitor.session.startMatch(monitor.roomID, tableId));
+        Assert.assertTrue(session.startMatch(roomID, tableId));
 
         // playing until game over
         gameResult.start();
         boolean startToWatching = false;
         while (true) {
-            GameView gameView = monitor.client.getLastGameView();
+            GameView gameView = client.getLastGameView();
 
-            checkGame = monitor.getTable(tableId);
+            checkGame = session.getTable(roomID,tableId);
             TableState state = checkGame.get().getTableState();
 
             logger.warn(checkGame.get().getTableName()
@@ -114,7 +124,7 @@ public class AIDuel {
             }
 
             if (!startToWatching && state == TableState.DUELING) {
-                Assert.assertTrue(monitor.session.watchGame(checkGame.get().getGames().iterator().next()));
+                Assert.assertTrue(session.watchGame(checkGame.get().getGames().iterator().next()));
                 startToWatching = true;
             }
 
@@ -163,10 +173,6 @@ public class AIDuel {
         return options;
     }
 
-    private static MatchOptions createSimpleGameOptionsForBots(GameTypeView gameTypeView, Session session) {
-        return createSimpleGameOptions("Bots test game", gameTypeView, session, PlayerType.HUMAN);
-    }
-
     private static MatchOptions createSimpleGameOptionsForAI(GameTypeView gameTypeView, Session session, String gameName) {
         return createSimpleGameOptions(gameName, gameTypeView, session, PlayerType.COMPUTER_MAD);
     }
@@ -198,26 +204,9 @@ public class AIDuel {
             this.roomID = this.session.getMainRoomId();
         }
 
-        public ArrayList<UsersView> getAllRoomUsers() {
-            ArrayList<UsersView> res = new ArrayList<>();
-            try {
-                for (RoomUsersView roomUsers : this.session.getRoomUsers(this.roomID)) {
-                    res.addAll(roomUsers.getUsersView());
-                }
-            } catch (MageRemoteException e) {
-                logger.error(e);
-            }
-            return res;
-        }
-
-
-
         public Optional<TableView> getTable(UUID tableID) {
             return this.session.getTable(this.roomID, tableID);
         }
-      
-
-
     }
 
     private static class LoadTestGameResult {
