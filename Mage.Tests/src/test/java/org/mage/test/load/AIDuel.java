@@ -56,7 +56,7 @@ public class AIDuel {
         String gameName ="AI Duel";
         String deckColors = "UB";
         String deckAllowedSets ="M20";
-        LoadTestGameResult gameResult = new LoadTestGameResult(0, "ai_test", 1);
+        //LoadTestGameResult gameResult = new LoadTestGameResult(0, "ai_test", 1);
 
 
         
@@ -105,21 +105,20 @@ public class AIDuel {
         Assert.assertTrue(session.startMatch(roomID, tableId));
 
         // playing until game over
-        gameResult.start();
+        //gameResult.start();
         boolean startToWatching = false;
+        
         while (true) {
             GameView gameView = client.getLastGameView();
 
             checkGame = session.getTable(roomID,tableId);
             TableState state = checkGame.get().getTableState();
 
-            logger.warn(checkGame.get().getTableName()
-                    + (gameView != null ? ", turn " + gameView.getTurn() + ", " + gameView.getStep().toString() : "")
-                    + (gameView != null ? ", active " + gameView.getActivePlayerName() : "")
-                    + ", " + state);
+            logger.warn((gameView != null ? ", turn " + gameView.getTurn() + ", " + gameView.getStep().toString() : "")
+                    + (gameView != null ? ", active " + gameView.getActivePlayerName() : ""));
 
             if (state == TableState.FINISHED) {
-                gameResult.finish(gameView);
+                //gameResult.finish(gameView);
                 break;
             }
 
@@ -158,9 +157,6 @@ public class AIDuel {
         options.getPlayerTypes().add(playersType);
         options.getPlayerTypes().add(playersType);
 
-        for (String deckType : session.getDeckTypes()){
-            logger.info(deckType);
-        }
         Assert.assertTrue("Can't find game type on the server: " + TEST_AI_DECK_TYPE,
                 Arrays.asList(session.getDeckTypes()).contains(TEST_AI_DECK_TYPE));
         
@@ -177,82 +173,7 @@ public class AIDuel {
         return createSimpleGameOptions(gameName, gameTypeView, session, PlayerType.COMPUTER_MAD);
     }
 
-    private static class LoadPlayer {
-
-        String userName;
-        Connection connection;
-        SimpleMageClient client;
-        Session session;
-        UUID roomID;
-        UUID createdTableID;
-        UUID connectedTableID;
-        DeckCardLists deckList;
-        String lastGameResult = "";
-
-        public LoadPlayer(String userPrefix) {
-            this(userPrefix, false);
-        }
-
-        public LoadPlayer(String userPrefix, boolean joinGameChat) {
-            this.userName = TEST_USER_NAME + "_" + userPrefix + "_" + RandomUtil.nextInt(10000);
-            this.connection = createSimpleConnection(this.userName);
-            this.client = new SimpleMageClient(joinGameChat);
-            this.session = new SessionImpl(this.client);
-
-            this.session.connect(this.connection);
-            this.client.setSession(this.session);
-            this.roomID = this.session.getMainRoomId();
-        }
-
-        public Optional<TableView> getTable(UUID tableID) {
-            return this.session.getTable(this.roomID, tableID);
-        }
-    }
-
-    private static class LoadTestGameResult {
-        int index;
-        String name;
-        long randomSeed;
-        Date timeStarted;
-        Date timeEnded = null;
-        GameView finalGameView = null;
-
-        public LoadTestGameResult(int index, String name, long randomSeed) {
-            this.index = index;
-            this.name = name;
-            this.randomSeed = randomSeed;
-        }
-
-        public void start() {
-            this.timeStarted = new Date();
-        }
-
-        public void finish(GameView finalGameView) {
-            this.timeEnded = new Date();
-            this.finalGameView = finalGameView;
-        }
-
-        public int getLife1() {
-            return this.finalGameView.getPlayers().get(0).getLife();
-        }
-
-        public int getLife2() {
-            return this.finalGameView.getPlayers().get(1).getLife();
-        }
-
-        public int getTurn() {
-            return this.finalGameView.getTurn();
-        }
-
-        public int getDuration() {
-            return (int) ((this.timeEnded.getTime() - this.timeStarted.getTime()) / 1000);
-        }
-    }
-
     private static GameTypeView prepareGameType(Session session) {
-        for (GameTypeView gameType : session.getGameTypes()) {
-            logger.info(gameType.getName());
-        }
         GameTypeView gameType = session.getGameTypes()
                 .stream()
                 .filter(m -> m.getName().equals(TEST_AI_GAME_MODE))
