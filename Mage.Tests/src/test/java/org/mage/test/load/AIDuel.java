@@ -52,12 +52,12 @@ public class AIDuel {
     private static final String TEST_AI_CUSTOM_DECK_PATH_2 = ""; // custom deck file instead random for player 2 (empty for random)
 
     public static void main(String[] args) {
-        logger.info("hey I entered the funciton at least!!!!!!");
+        logger.info("hey I entered the funciton at least!!!!!! new vewrsion");
         String gameName ="AI Duel";
         String deckColors = "UB";
         String deckAllowedSets ="M20";
-        LoadTestGameResultsList rl = new LoadTestGameResultsList();
-        LoadTestGameResult gameResult = rl.createGame(0, "ai_test", 1);
+        LoadTestGameResult gameResult = new LoadTestGameResult(0, "ai_test", 1);
+
 
         
         Assert.assertFalse("need deck colors", deckColors.isEmpty());
@@ -257,87 +257,6 @@ public class AIDuel {
 
         public int getDuration() {
             return (int) ((this.timeEnded.getTime() - this.timeStarted.getTime()) / 1000);
-        }
-    }
-
-    private static class LoadTestGameResultsList extends HashMap<Integer, LoadTestGameResult> {
-
-        private static final String tableFormatHeader = "|%-10s|%-15s|%-20s|%-10s|%-15s|%-15s|%-10s|%-20s|%n";
-        private static final String tableFormatData = "|%-10s|%15s|%20s|%10s|%15s|%15s|%10s|%20s|%n";
-
-        public LoadTestGameResult createGame(int index, String name, long randomSeed) {
-            if (this.containsKey(index)) {
-                throw new IllegalArgumentException("Game with index " + index + " already exists");
-            }
-            LoadTestGameResult res = new LoadTestGameResult(index, name, randomSeed);
-            this.put(index, res);
-            return res;
-        }
-
-        public void printResultHeader() {
-            List<String> data = Arrays.asList(
-                    "index",
-                    "name",
-                    "random sid",
-                    "turn",
-                    "player 1",
-                    "player 2",
-                    "time, sec",
-                    "time per turn, sec"
-            );
-            System.out.printf(tableFormatHeader, data.toArray());
-        }
-
-        public void printResultData() {
-            this.values().forEach(this::printResultData);
-        }
-
-        public void printResultData(LoadTestGameResult gameResult) {
-            List<String> data = Arrays.asList(
-                    String.valueOf(gameResult.index), //"index",
-                    gameResult.name, //"name",
-                    String.valueOf(gameResult.randomSeed), // "random sid",
-                    String.valueOf(gameResult.getTurn()), //"turn",
-                    String.valueOf(gameResult.getLife1()), //"player 1",
-                    String.valueOf(gameResult.getLife2()), //"player 2",
-                    String.valueOf(gameResult.getDuration()),// "time, sec",
-                    String.valueOf(gameResult.getDuration() / gameResult.getTurn()) //"per turn, sec"
-            );
-            System.out.printf(tableFormatData, data.toArray());
-        }
-
-        public void printResultTotal() {
-            List<String> data = Arrays.asList(
-                    "TOTAL/AVG", //"index",
-                    String.valueOf(this.size()), //"name",
-                    "", // "random sid",
-                    String.valueOf(this.getAvgTurn()), // turn
-                    String.valueOf(this.getAvgLife1()), // player 1
-                    String.valueOf(this.getAvgLife2()), // player 2
-                    String.valueOf(this.getAvgDuration()), // time, sec
-                    String.valueOf(this.getAvgDurationPerTurn()) // time per turn, sec
-            );
-            System.out.printf(tableFormatData, data.toArray());
-        }
-
-        private int getAvgTurn() {
-            return this.values().stream().mapToInt(LoadTestGameResult::getTurn).sum() / this.size();
-        }
-
-        private int getAvgLife1() {
-            return this.values().stream().mapToInt(LoadTestGameResult::getLife1).sum() / this.size();
-        }
-
-        private int getAvgLife2() {
-            return this.values().stream().mapToInt(LoadTestGameResult::getLife2).sum() / this.size();
-        }
-
-        private int getAvgDuration() {
-            return this.values().stream().mapToInt(LoadTestGameResult::getDuration).sum() / this.size();
-        }
-
-        private int getAvgDurationPerTurn() {
-            return getAvgDuration() / getAvgTurn();
         }
     }
 
