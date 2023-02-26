@@ -47,15 +47,9 @@ public class AIDuel {
     private static final String TEST_AI_GAME_MODE = "Two Player Duel";
 
     private static final String TEST_AI_DECK_TYPE = "Limited";
-    private static final String TEST_AI_RANDOM_DECK_SETS = "NEO"; // set for random generated decks (empty for all sets usage)
+    //private static final String TEST_AI_RANDOM_DECK_SETS = "NEO"; // set for random generated decks (empty for all sets usage)
     private static final String TEST_AI_CUSTOM_DECK_PATH_1 = ""; // custom deck file instead random for player 1 (empty for random)
     private static final String TEST_AI_CUSTOM_DECK_PATH_2 = ""; // custom deck file instead random for player 2 (empty for random)
-
-    @BeforeClass
-    public static void initDatabase() {
-        // recreate missing cards db
-        CardScanner.scan();
-    }
 
 
 
@@ -124,92 +118,7 @@ public class AIDuel {
         }
     }
 
-    @Test
-    @Ignore
-    public void test_UsersConnectToServer() throws Exception {
-
-        // simple connection to server
-        // monitor other players
-        LoadPlayer monitor = new LoadPlayer("monitor");
-        Assert.assertTrue(monitor.session.isConnected());
-        int startUsersCount = monitor.getAllRoomUsers().size();
-        int minimumSleepTime = 2000;
-
-        // user 1
-        LoadPlayer player1 = new LoadPlayer("1");
-        Thread.sleep(minimumSleepTime);
-        Assert.assertEquals("Can't see users count change 1", startUsersCount + 1, monitor.getAllRoomUsers().size());
-        Assert.assertNotNull("Can't find user 1", monitor.findUser(player1.userName));
-
-        // user 2
-        LoadPlayer player2 = new LoadPlayer("2");
-        Thread.sleep(minimumSleepTime);
-        Assert.assertEquals("Can't see users count change 2", startUsersCount + 2, monitor.getAllRoomUsers().size());
-        Assert.assertNotNull("Can't find user 2", monitor.findUser(player2.userName));
-    }
-
-    @Test
-    @Ignore
-    public void test_TwoUsersPlayGameUntilEnd() {
-
-        // monitor other players
-        LoadPlayer monitor = new LoadPlayer("monitor");
-
-        // users
-        LoadPlayer player1 = new LoadPlayer("1");
-        LoadPlayer player2 = new LoadPlayer("2");
-
-        // game by user 1
-        GameTypeView gameType = prepareGameType(player1.session);
-        MatchOptions gameOptions = createSimpleGameOptionsForBots(gameType, player1.session);
-        TableView game = player1.session.createTable(player1.roomID, gameOptions);
-        UUID tableId = game.getTableId();
-        Assert.assertEquals(player1.userName, game.getControllerName());
-
-        DeckCardLists deckList = DeckTestUtils.buildRandomDeckAndInitCards("GR", true);
-        Optional<TableView> checkGame;
-
-        /*
-        for(DeckCardInfo info: deckList.getCards()) {
-            logger.info(info.getCardName());
-        }*/
-        // before connect
-        checkGame = monitor.getTable(tableId);
-        Assert.assertTrue(checkGame.isPresent());
-        Assert.assertEquals(2, checkGame.get().getSeats().size());
-        Assert.assertEquals("", checkGame.get().getSeats().get(0).getPlayerName());
-        Assert.assertEquals("", checkGame.get().getSeats().get(1).getPlayerName());
-
-        // connect user 1
-        Assert.assertTrue(player1.session.joinTable(player1.roomID, tableId, player1.userName, PlayerType.HUMAN, 1, deckList, ""));
-        checkGame = monitor.getTable(tableId);
-        Assert.assertTrue(checkGame.isPresent());
-        Assert.assertEquals(2, checkGame.get().getSeats().size());
-        Assert.assertEquals(player1.userName, checkGame.get().getSeats().get(0).getPlayerName());
-        Assert.assertEquals("", checkGame.get().getSeats().get(1).getPlayerName());
-
-        // connect user 2
-        Assert.assertTrue(player2.session.joinTable(player2.roomID, tableId, player2.userName, PlayerType.HUMAN, 1, deckList, ""));
-        checkGame = monitor.getTable(tableId);
-        Assert.assertTrue(checkGame.isPresent());
-        Assert.assertEquals(2, checkGame.get().getSeats().size());
-        Assert.assertEquals(player1.userName, checkGame.get().getSeats().get(0).getPlayerName());
-        Assert.assertEquals(player2.userName, checkGame.get().getSeats().get(1).getPlayerName());
-
-        // match start
-        Assert.assertTrue(player1.session.startMatch(player1.roomID, tableId));
-
-        // playing until game over
-        while (!player1.client.isGameOver() && !player2.client.isGameOver()) {
-            checkGame = monitor.getTable(tableId);
-            logger.warn(checkGame.get().getTableState());
-            try {
-                Thread.sleep(1000);
-            } catch (InterruptedException e) {
-                logger.error(e.getMessage(), e);
-            }
-        }
-    }
+        
 
     public static void main(String[] args) {
         logger.info("hey I entered the funciton at least!!!!!!");
