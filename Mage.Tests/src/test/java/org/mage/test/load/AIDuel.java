@@ -52,17 +52,30 @@ public class AIDuel {
     private static final String TEST_AI_CUSTOM_DECK_PATH_2 = ""; // custom deck file instead random for player 2 (empty for random)
 
     public static void main(String[] args) {
-        logger.info("hey I entered the funciton at least!!!!!! new vewrsion");
-        String gameName ="AI Duel";
+        // do a game with random decks for testing
         String deckColors = "UB";
         String deckAllowedSets ="M20";
+
+        DeckCardLists deckListRandom = DeckTestUtils.buildRandomDeckAndInitCards(deckColors, false, deckAllowedSets);
+        DeckCardLists deckList1 = deckListRandom;
+        DeckCardLists deckList2 = deckListRandom;
+
+        do_game(deckList1,deckList2);
+    }
+
+    public static void do_game_with_deck_paths(String path1, String path2){
+        DeckCardLists deckList1 = DeckImporter.importDeckFromFile(path1, false);
+        DeckCardLists deckList2 = DeckImporter.importDeckFromFile(path2, false);
+        do_game(deckList1,deckList2);
+    }
+    
+    public static void do_game(DeckCardLists deckList1, DeckCardLists deckList2)
+    {
+        logger.info("Staring game...");
+        String gameName ="AI Duel";
+
         //LoadTestGameResult gameResult = new LoadTestGameResult(0, "ai_test", 1);
-
-
-        
-        Assert.assertFalse("need deck colors", deckColors.isEmpty());
-        Assert.assertFalse("need allowed sets", deckAllowedSets.isEmpty());
-
+       
         // monitor and game source
         //LoadPlayer monitor = new LoadPlayer("m", true);
         String userName = TEST_USER_NAME + RandomUtil.nextInt(10000);
@@ -74,8 +87,6 @@ public class AIDuel {
         client.setSession(session);
         UUID roomID = session.getMainRoomId();
 
-
-
         // game by monitor
         GameTypeView gameType = prepareGameType(session);
         MatchOptions gameOptions = createSimpleGameOptionsForAI(gameType, session, gameName);
@@ -83,17 +94,8 @@ public class AIDuel {
         UUID tableId = game.getTableId();
 
         // deck load
-        DeckCardLists deckListRandom = DeckTestUtils.buildRandomDeckAndInitCards(deckColors, false, deckAllowedSets);
-        DeckCardLists deckList1 = deckListRandom;
-        DeckCardLists deckList2 = deckListRandom;
-        if (!TEST_AI_CUSTOM_DECK_PATH_1.isEmpty()) {
-            deckList1 = DeckImporter.importDeckFromFile(TEST_AI_CUSTOM_DECK_PATH_1, false);
-            Assert.assertFalse("Can't load custom deck 1 from " + TEST_AI_CUSTOM_DECK_PATH_1, deckList1.getCards().isEmpty());
-        }
-        if (!TEST_AI_CUSTOM_DECK_PATH_2.isEmpty()) {
-            deckList2 = DeckImporter.importDeckFromFile(TEST_AI_CUSTOM_DECK_PATH_2, false);
-            Assert.assertFalse("Can't load custom deck 2 from " + TEST_AI_CUSTOM_DECK_PATH_2, deckList2.getCards().isEmpty());
-        }
+
+        
 
         Optional<TableView> checkGame;
 
