@@ -60,16 +60,16 @@ public class AIDuel {
         DeckCardLists deckList1 = deckListRandom;
         DeckCardLists deckList2 = deckListRandom;
 
-        do_game(deckList1,deckList2);
+        do_game(deckList1, PlayerType.COMPUTER_MAD,  deckList2, PlayerType.COMPUTER_MAD);
     }
 
-    public static void do_game_with_deck_paths(String path1, String path2){
+    public static void do_game_with_deck_paths(String path1, PlayerType p1type, String path2, PlayerType p2type){
         DeckCardLists deckList1 = DeckImporter.importDeckFromFile(path1, false);
         DeckCardLists deckList2 = DeckImporter.importDeckFromFile(path2, false);
-        do_game(deckList1,deckList2);
+        do_game(deckList1,p1type,deckList2,p2type);
     }
     
-    public static void do_game(DeckCardLists deckList1, DeckCardLists deckList2)
+    public static void do_game(DeckCardLists deckList1, PlayerType p1type ,DeckCardLists deckList2, PlayerType p2type)
     {
         logger.info("Staring game...");
         String gameName ="AI Duel";
@@ -100,8 +100,8 @@ public class AIDuel {
         Optional<TableView> checkGame;
 
         // join AI
-        Assert.assertTrue(session.joinTable(roomID, tableId, "ai_1", PlayerType.COMPUTER_MAD, 5, deckList1, ""));
-        Assert.assertTrue(session.joinTable(roomID, tableId, "ai_2", PlayerType.COMPUTER_MAD, 5, deckList2, ""));
+        Assert.assertTrue(session.joinTable(roomID, tableId, "ai_1", p1type, 5, deckList1, ""));
+        Assert.assertTrue(session.joinTable(roomID, tableId, "ai_2", p2type, 5, deckList2, ""));
 
         // match start
         Assert.assertTrue(session.startMatch(roomID, tableId));
